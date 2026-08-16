@@ -18,24 +18,19 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Unzip Project Code
+      - name: Strict Project Unzip
         run: |
-          mkdir -p extracted_project
-          unzip -q "geeta-gyan-sketch (2).zip" -d extracted_project || true
+          # ज़िप फाइल को पूरी तरह बाहर निकालना
+          unzip -q "geeta-gyan-sketch (2).zip" -d .
+          echo "=== Unzip Completed ==="
+          ls -la
           
-      - name: Locate Project Root and Build
+      - name: Grant Execute Permission and Build
         run: |
-          # सही फोल्डर ढूंढने का ऑटोमैटिक तरीका
-          GRADLE_PATH=$(find . -name "gradlew" | head -n 1)
-          if [ -z "$GRADLE_PATH" ]; then
-            echo "Gradlew not found, generating wrapper..."
-            gradle wrapper
-            GRADLE_PATH="./gradlew"
-          fi
-          PROJECT_DIR=$(dirname "$GRADLE_PATH")
-          cd "$PROJECT_DIR"
-          chmod +x gradlew
-          ./gradlew assembleDebug || ./gradlew build --minus-gradle --no-daemon
+          # अनज़िप करने के बाद सही जगह पर जाकर परमिशन देना
+          chmod +x gradlew || chmod +x **/gradlew
+          ./gradlew assembleDebug
+          echo "=== Build Completed ==="
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
