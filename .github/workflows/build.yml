@@ -26,20 +26,19 @@ jobs:
 
       - name: Fix Missing Files and Build
         run: |
-          # खुद से gradle wrapper सेटअप करना
           gradle wrapper
           
-          # मिसिंग google-services.json फ़ाइल को डमी डेटा के साथ बनाना ताकि एरर न आए
+          # ऐप की असली पैकेज आईडी (com.aistudio.worldcamai.kxmpzq) के साथ google-services.json बनाना
           mkdir -p app
-          echo '{"project_info":{"project_number":"123","project_id":"dummy"},"client":[{"client_info":{"mobilesdk_app_id":"1:123:android:123"},"api_key":[{}]}]}' > app/google-services.json
+          echo '{"project_info":{"project_number":"123","project_id":"dummy-project"},"client":[{"client_info":{"mobilesdk_app_id":"1:123:android:123","android_client_info":{"package_name":"com.aistudio.worldcamai.kxmpzq"}},"api_key":[{}]}]}' > app/google-services.json
           
-          # मिसिंग debug.keystore फ़ाइल को ऑटो-जनरेट करना
+          # debug.keystore सेटअप
           mkdir -p ~/.android
           keytool -genkey -v -keystore ~/.android/debug.keystore -storepass android -keypass android -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
           mkdir -p app/debug
           cp ~/.android/debug.keystore app/debug.keystore || true
           
-          # अब बिल्ड रन करना
+          # फाइनल बिल्ड
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
           echo "=== Build Completed ==="
