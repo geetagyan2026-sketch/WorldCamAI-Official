@@ -24,12 +24,24 @@ jobs:
           echo "=== Unzip Completed ==="
           ls -la
 
-      - name: Setup Gradle and Build
+      - name: Fix Missing Files and Build
         run: |
-          # अगर gradlew फाइल नहीं है, तो खुद से gradle सेटअप करके बिल्ड करना
+          # खुद से gradle wrapper सेटअप करना
           gradle wrapper
+          
+          # मिसिंग google-services.json फ़ाइल को डमी डेटा के साथ बनाना ताकि एरर न आए
+          mkdir -p app
+          echo '{"project_info":{"project_number":"123","project_id":"dummy"},"client":[{"client_info":{"mobilesdk_app_id":"1:123:android:123"},"api_key":[{}]}]}' > app/google-services.json
+          
+          # मिसिंग debug.keystore फ़ाइल को ऑटो-जनरेट करना
+          mkdir -p ~/.android
+          keytool -genkey -v -keystore ~/.android/debug.keystore -storepass android -keypass android -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+          mkdir -p app/debug
+          cp ~/.android/debug.keystore app/debug.keystore || true
+          
+          # अब बिल्ड रन करना
           chmod +x gradlew
-          ./gradlew assembleDebug
+          ./gradlew assembleDebug --no-daemon
           echo "=== Build Completed ==="
 
       - name: Upload APK Artifact
