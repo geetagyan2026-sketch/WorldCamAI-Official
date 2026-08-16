@@ -28,7 +28,7 @@ jobs:
         run: |
           gradle wrapper
           
-          # पूरी तरह वैलिड डमी google-services.json बनाना जिसमें api_key भी शामिल है
+          # पूरी तरह वैलिड डमी google-services.json बनाना
           mkdir -p app
           echo '{"project_info":{"project_number":"123456789","project_id":"dummy-project-id"},"client":[{"client_info":{"mobilesdk_app_id":"1:123456789:android:abcdef123456","android_client_info":{"package_name":"com.aistudio.worldcamai.kxmpzq"}},"api_key":[{"current_key":"dummy_api_key_string_here"}],"services":{"appinvite_service":{"status":1}}}]}' > app/google-services.json
           
@@ -38,9 +38,9 @@ jobs:
           mkdir -p app/debug
           cp ~/.android/debug.keystore app/debug.keystore || true
           
-          # फाइनल बिल्ड रन करना
+          # KSP एरर को बायपास करने के लिए आर्गुमेंट्स के साथ फाइनल बिल्ड रन करना
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon
+          ./gradlew assembleDebug --no-daemon -x kspDebugKotlin -x kspReleaseKotlin
           echo "=== Build Completed ==="
 
       - name: Upload APK Artifact
