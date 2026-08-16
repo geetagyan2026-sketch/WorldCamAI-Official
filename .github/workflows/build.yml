@@ -20,11 +20,11 @@ jobs:
 
       - name: Strict Project Unzip
         run: |
-          # ज़िप फाइल को पूरी तरह बाहर निकालना
-          unzip -q "geeta-gyan-sketch (2).zip" -d .
+          # ज़िप फ़ाइल को पूरी तरह बाहर निकालना और बिना पूछे पुरानी फ़ाइलों को ओवरराइट करना
+          unzip -qo "geeta-gyan-sketch (2).zip" -d .
           echo "=== Unzip Completed ==="
           ls -la
-          
+
       - name: Grant Execute Permission and Build
         run: |
           # अनज़िप करने के बाद सही जगह पर जाकर परमिशन देना
