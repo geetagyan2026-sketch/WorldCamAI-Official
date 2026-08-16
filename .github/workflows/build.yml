@@ -28,17 +28,17 @@ jobs:
         run: |
           gradle wrapper
           
-          # ऐप की असली पैकेज आईडी (com.aistudio.worldcamai.kxmpzq) के साथ google-services.json बनाना
+          # पूरी तरह वैलिड डमी google-services.json बनाना जिसमें api_key भी शामिल है
           mkdir -p app
-          echo '{"project_info":{"project_number":"123","project_id":"dummy-project"},"client":[{"client_info":{"mobilesdk_app_id":"1:123:android:123","android_client_info":{"package_name":"com.aistudio.worldcamai.kxmpzq"}},"api_key":[{}]}]}' > app/google-services.json
+          echo '{"project_info":{"project_number":"123456789","project_id":"dummy-project-id"},"client":[{"client_info":{"mobilesdk_app_id":"1:123456789:android:abcdef123456","android_client_info":{"package_name":"com.aistudio.worldcamai.kxmpzq"}},"api_key":[{"current_key":"dummy_api_key_string_here"}],"services":{"appinvite_service":{"status":1}}}]}' > app/google-services.json
           
-          # debug.keystore सेटअप
+          # debug.keystore setup
           mkdir -p ~/.android
           keytool -genkey -v -keystore ~/.android/debug.keystore -storepass android -keypass android -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
           mkdir -p app/debug
           cp ~/.android/debug.keystore app/debug.keystore || true
           
-          # फाइनल बिल्ड
+          # फाइनल बिल्ड रन करना
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
           echo "=== Build Completed ==="
