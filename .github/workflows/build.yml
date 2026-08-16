@@ -20,13 +20,22 @@ jobs:
 
       - name: Unzip Project Code
         run: |
-          unzip -q "geeta-gyan-sketch (2).zip" -d extracted_project || echo "Already unzipped"
+          mkdir -p extracted_project
+          unzip -q "geeta-gyan-sketch (2).zip" -d extracted_project || true
           
-      - name: Build APK with Gradle
+      - name: Locate Project Root and Build
         run: |
-          if [ -d "extracted_project" ]; then cd extracted_project; fi
+          # सही फोल्डर ढूंढने का ऑटोमैटिक तरीका
+          GRADLE_PATH=$(find . -name "gradlew" | head -n 1)
+          if [ -z "$GRADLE_PATH" ]; then
+            echo "Gradlew not found, generating wrapper..."
+            gradle wrapper
+            GRADLE_PATH="./gradlew"
+          fi
+          PROJECT_DIR=$(dirname "$GRADLE_PATH")
+          cd "$PROJECT_DIR"
           chmod +x gradlew
-          ./gradlew assembleDebug
+          ./gradlew assembleDebug || ./gradlew build --minus-gradle --no-daemon
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
@@ -34,3 +43,4 @@ jobs:
           name: WorldCamAI-Official-APK
           path: |
             **/build/outputs/apk/debug/*.apk
+            **/*.apk
