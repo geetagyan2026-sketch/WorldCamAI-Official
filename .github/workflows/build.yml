@@ -20,15 +20,21 @@ jobs:
 
       - name: Strict Project Unzip
         run: |
-          # ज़िप फ़ाइल को पूरी तरह बाहर निकालना और बिना पूछे पुरानी फ़ाइलों को ओवरराइट करना
           unzip -qo "geeta-gyan-sketch (2).zip" -d .
           echo "=== Unzip Completed ==="
           ls -la
 
-      - name: Grant Execute Permission and Build
+      - name: Find Project Folder and Build
         run: |
-          # अनज़िप करने के बाद सही जगह पर जाकर परमिशन देना
-          chmod +x gradlew || chmod +x **/gradlew
+          # यह कमांड खुद ही ढूंढ लेगी कि gradlew फाइल किस फोल्डर में है और वहीं जाकर बिल्ड करेगी
+          GRADLEW_PATH=$(find . -name "gradlew" | head -n 1)
+          if [ -z "$GRADLEW_PATH" ]; then
+            echo "Error: gradlew file not found anywhere!"
+            exit 1
+          fi
+          PROJECT_DIR=$(dirname "$GRADLEW_PATH")
+          cd "$PROJECT_DIR"
+          chmod +x gradlew
           ./gradlew assembleDebug
           echo "=== Build Completed ==="
 
