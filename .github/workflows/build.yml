@@ -27,6 +27,19 @@ jobs:
 
       - name: Fix Missing Files and Build
         run: |
+          # अगर अनजिप करने के बाद फाइल्स किसी सब-फोल्डर में हैं, तो वहाँ जाएँ
+          if [ -f "gradlew" ]; then
+            echo "Gradlew found in root"
+          else
+            SUBDIR=$(find . -maxdepth 2 -name "gradlew" -exec dirname {} \;)
+            if [ ! -z "$SUBDIR" ]; then
+              cd "$SUBDIR"
+              echo "Moved to subdirectory: $SUBDIR"
+            fi
+          fi
+
+          # Wrapper सेटअप
+          chmod +x gradlew
           ./gradlew wrapper
           
           # Dummy google-services.json setup
@@ -39,8 +52,7 @@ jobs:
           mkdir -p app/debug
           cp ~/.android/debug.keystore app/debug/keystore.gradle || true
           
-          # Build Commands without skipping KSP
-          chmod +x gradlew
+          # Clean and Build Debug APK
           ./gradlew clean assembleDebug --no-daemon
           echo "=== Build Completed ==="
 
