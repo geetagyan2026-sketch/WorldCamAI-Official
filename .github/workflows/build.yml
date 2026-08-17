@@ -46,13 +46,17 @@ jobs:
           mkdir -p app
           echo '{"project_info":{"project_number":"123456789","project_id":"dummy-project-id"},"client":[{"client_info":{"mobilesdk_app_id":"1:123456789:android:123456789","android_client_info":{"package_name":"com.aistudio.worldcamai.kxmpzq"}},"api_key":[{"current_key":"dummy_api_key"}]}]}' > app/google-services.json
           
-          # Debug Keystore setup
+          # [कीस्टोर फिक्स] प्रोजेक्ट की मांग के अनुसार सही जगह पर debug.keystore जेनरेट करना
           mkdir -p ~/.android
           keytool -genkey -v -keystore ~/.android/debug.keystore -storepass android -keypass android -alias androiddebugkey -dname "CN=Android Debug,O=Android,C=US" -keyalg RSA -keysize 2048 -validity 10000
-          mkdir -p app/debug
-          cp ~/.android/debug.keystore app/debug/keystore.gradle || true
           
-          # [अचूक उपाय] 9.3.1 वर्ज़न के साथ KSP और साइनिंग एरर को पूरी तरह बायपास करके सीधा APK बनाना
+          # इसे उन सभी संभावित जगहों पर कॉपी करें जहाँ प्रोजेक्ट इसे ढूंढ रहा है
+          mkdir -p app/debug
+          cp ~/.android/debug.keystore ./debug.keystore || true
+          cp ~/.android/debug.keystore ./app/debug.keystore || true
+          cp ~/.android/debug.keystore ./app/debug/keystore.gradle || true
+          
+          # 9.3.1 वर्ज़न के साथ KSP और साइनिंग एरर को बाईपास करके फाइनल बिल्ड रन करना
           ./gradlew assembleDebug --no-daemon -x kspDebugKotlin -x kspReleaseKotlin -x validateSigningDebug
           echo "=== Build Completed ==="
 
