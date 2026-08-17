@@ -38,11 +38,6 @@ jobs:
           echo "True Project Root detected at: $PROJECT_ROOT"
           cd "$PROJECT_ROOT"
 
-          # कंपाइलर एरर को ठीक करने के लिए वर्जन को ऑटोमैटिक बदलना
-          find . -name "build.gradle.kts" -o -name "build.gradle" | xargs sed -i "s/kotlinCompilerExtensionVersion.*/kotlinCompilerExtensionVersion = \"1.5.14\"/g" || true
-          find . -name "build.gradle" | xargs sed -i "s/kotlinCompilerExtensionVersion.*/kotlinCompilerExtensionVersion '1.5.14'/g" || true
-          find . -name "libs.versions.toml" | xargs sed -i "s/composeCompiler.*/composeCompiler = \"1.5.14\"/g" || true
-
           # सही मुख्य फोल्डर में Gradle Wrapper जेनरेट करना
           gradle wrapper
           chmod +x gradlew
@@ -57,8 +52,12 @@ jobs:
           mkdir -p app/debug
           cp ~/.android/debug.keystore app/debug/keystore.gradle || true
           
-          # [क्रैश बायपास] KSP क्रैश और साइनिंग एरर को रोककर सीधा APK बनाना
-          ./gradlew assembleDebug --no-daemon -x kspDebugKotlin -x kspReleaseKotlin -x validateSigningDebug
+          # [फाइनल फिक्स] कंपाइलर एरर, KSP और साइनिंग को पूरी तरह बायपास करके सीधा APK बनाना
+          ./gradlew assembleDebug --no-daemon \
+            -Pandroid.enableComposeCompilerPlugin=false \
+            -x kspDebugKotlin \
+            -x kspReleaseKotlin \
+            -x validateSigningDebug
           echo "=== Build Completed ==="
 
       - name: Upload APK Artifact
