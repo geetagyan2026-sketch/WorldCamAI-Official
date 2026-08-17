@@ -23,22 +23,25 @@ jobs:
         run: |
           unzip -qo "geeta-gyan-sketch (2).zip" -d .
           echo "=== Unzip Completed ==="
-          ls -la
 
       - name: Fix Missing Files and Build
         run: |
-          # अगर अनजिप करने के बाद फाइल्स किसी सब-फोल्डर में हैं, तो वहाँ जाएँ
-          if [ -f "gradlew" ]; then
-            echo "Gradlew found in root"
-          else
-            SUBDIR=$(find . -maxdepth 2 -name "gradlew" -exec dirname {} \;)
-            if [ ! -z "$SUBDIR" ]; then
-              cd "$SUBDIR"
-              echo "Moved to subdirectory: $SUBDIR"
-            fi
+          # पूरे प्रोजेक्ट में gradlew की लोकेशन ढूंढें
+          GRADLE_PATH=$(find . -name "gradlew" | head -n 1)
+          
+          if [ -z "$GRADLE_PATH" ]; then
+            echo "Error: gradlew file not found anywhere in the zip!"
+            exit 1
           fi
+          
+          # जहां gradlew मिला, उस फोल्डर का पाथ निकालें
+          PROJECT_ROOT=$(dirname "$GRADLE_PATH")
+          echo "Project Root detected at: $PROJECT_ROOT"
+          
+          # अब सीधे उसी सही फोल्डर के अंदर जाकर सारा काम करेंगे
+          cd "$PROJECT_ROOT"
 
-          # Wrapper सेटअप
+          # Wrapper और Permissions सेटअप
           chmod +x gradlew
           ./gradlew wrapper
           
