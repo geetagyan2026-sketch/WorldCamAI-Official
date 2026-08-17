@@ -26,24 +26,21 @@ jobs:
 
       - name: Fix Missing Files and Build
         run: |
-          # पूरे प्रोजेक्ट में gradlew की लोकेशन ढूंढें
-          GRADLE_PATH=$(find . -name "gradlew" | head -n 1)
+          # उस फोल्डर को ढूंढें जहां build.gradle.kts मौजूद है
+          GRADLE_BUILD_PATH=$(find . -name "build.gradle.kts" -o -name "build.gradle" | head -n 1)
           
-          if [ -z "$GRADLE_PATH" ]; then
-            echo "Error: gradlew file not found anywhere in the zip!"
+          if [ -z "$GRADLE_BUILD_PATH" ]; then
+            echo "Error: build.gradle file not found anywhere!"
             exit 1
           fi
           
-          # जहां gradlew मिला, उस फोल्डर का पाथ निकालें
-          PROJECT_ROOT=$(dirname "$GRADLE_PATH")
+          PROJECT_ROOT=$(dirname "$GRADLE_BUILD_PATH")
           echo "Project Root detected at: $PROJECT_ROOT"
-          
-          # अब सीधे उसी सही फोल्डर के अंदर जाकर सारा काम करेंगे
           cd "$PROJECT_ROOT"
 
-          # Wrapper और Permissions सेटअप
+          # गायब gradlew (Gradle Wrapper) को यहाँ खुद जेनरेट करना
+          gradle wrapper
           chmod +x gradlew
-          ./gradlew wrapper
           
           # Dummy google-services.json setup
           mkdir -p app
