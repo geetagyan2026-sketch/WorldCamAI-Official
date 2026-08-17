@@ -42,9 +42,9 @@ jobs:
           gradle wrapper
           chmod +x gradlew
           
-          # Dummy google-services.json setup (सही app फोल्डर के अंदर)
+          # आपके असली पैकेज नाम (com.aistudio.worldcamai.kxmpzq) के साथ google-services.json सेटअप
           mkdir -p app
-          echo '{"project_info":{"project_number":"123456789","project_id":"dummy-project-id"},"client":[{"client_info":{"mobilesdk_app_id":"1:123456789:android:123456789","android_client_info":{"package_name":"com.example.app"}}}]}' > app/google-services.json
+          echo '{"project_info":{"project_number":"123456789","project_id":"dummy-project-id"},"client":[{"client_info":{"mobilesdk_app_id":"1:123456789:android:123456789","android_client_info":{"package_name":"com.aistudio.worldcamai.kxmpzq"}},"api_key":[{"current_key":"dummy_api_key"}]}]}' > app/google-services.json
           
           # Debug Keystore setup
           mkdir -p ~/.android
