@@ -38,8 +38,8 @@ jobs:
           echo "True Project Root detected at: $PROJECT_ROOT"
           cd "$PROJECT_ROOT"
 
-          # सही मुख्य फोल्डर में Gradle Wrapper जेनरेट करना
-          gradle wrapper
+          # [फिक्स] यहाँ हम जबरदस्ती केवल वही Gradle 9.3.1 डाउनलोड करवा रहे हैं जो काम करता है
+          gradle wrapper --gradle-version 9.3.1
           chmod +x gradlew
           
           # आपके असली पैकेज नाम के साथ google-services.json सेटअप
@@ -52,12 +52,8 @@ jobs:
           mkdir -p app/debug
           cp ~/.android/debug.keystore app/debug/keystore.gradle || true
           
-          # [फाइनल फिक्स] कंपाइलर एरर, KSP और साइनिंग को पूरी तरह बायपास करके सीधा APK बनाना
-          ./gradlew assembleDebug --no-daemon \
-            -Pandroid.enableComposeCompilerPlugin=false \
-            -x kspDebugKotlin \
-            -x kspReleaseKotlin \
-            -x validateSigningDebug
+          # आपके वर्ज़न 9.3.1 के साथ क्लीन बिल्ड रन करना
+          ./gradlew clean assembleDebug --no-daemon
           echo "=== Build Completed ==="
 
       - name: Upload APK Artifact
