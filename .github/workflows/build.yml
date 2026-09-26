@@ -26,13 +26,25 @@ jobs:
 
       - name: Fix Missing Files and Build
         run: |
+          # Find where settings.gradle or settings.gradle.kts is located
           SETTINGS_PATH=$(find . -name "settings.gradle.kts" -o -name "settings.gradle" | head -n 1)
           if [ -z "$SETTINGS_PATH" ]; then
             echo "Error: settings.gradle file not found anywhere!"
             exit 1
           fi
           PROJECT_ROOT=$(dirname "$SETTINGS_PATH")
+          echo "Project Root found at: $PROJECT_ROOT"
           cd "$PROJECT_ROOT"
+          
+          # Find gradlew inside the project root specifically
+          GRADLEW_FILE=$(find . -name "gradlew" | head -n 1)
+          if [ -z "$GRADLEW_FILE" ]; then
+            echo "Error: gradlew file not found inside project root!"
+            exit 1
+          fi
+          
+          GRADLEW_DIR=$(dirname "$GRADLEW_FILE")
+          cd "$GRADLEW_DIR"
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon -x kspDebugKotlin -x kspReleaseKotlin -x validateSigningDebug
           echo "=== Build Completed ==="
