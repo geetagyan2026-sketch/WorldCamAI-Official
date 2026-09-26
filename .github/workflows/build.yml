@@ -19,44 +19,21 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Strict Project Unzip
+      - name: Extract Project Files
         run: |
-          unzip -qo "geeta-gyan-sketch (2).zip" -d .
+          find . -name "*.zip" -exec unzip -q {} -d . \;
           echo "=== Unzip Completed ==="
 
       - name: Fix Missing Files and Build
         run: |
-          # मुख्य settings.gradle.kts या settings.gradle वाली लोकेशन ढूंढें
           SETTINGS_PATH=$(find . -name "settings.gradle.kts" -o -name "settings.gradle" | head -n 1)
-          
           if [ -z "$SETTINGS_PATH" ]; then
             echo "Error: settings.gradle file not found anywhere!"
             exit 1
           fi
-          
           PROJECT_ROOT=$(dirname "$SETTINGS_PATH")
-          echo "True Project Root detected at: $PROJECT_ROOT"
           cd "$PROJECT_ROOT"
-
-          # आपके ऐप का पसंदीदा 9.3.1 वर्ज़न ही डाउनलोड करवाएं
-          gradle wrapper --gradle-version 9.3.1
           chmod +x gradlew
-          
-          # आपके असली पैकेज नाम के साथ google-services.json सेटअप
-          mkdir -p app
-          echo '{"project_info":{"project_number":"123456789","project_id":"dummy-project-id"},"client":[{"client_info":{"mobilesdk_app_id":"1:123456789:android:123456789","android_client_info":{"package_name":"com.aistudio.worldcamai.kxmpzq"}},"api_key":[{"current_key":"dummy_api_key"}]}]}' > app/google-services.json
-          
-          # [कीस्टोर फिक्स] प्रोजेक्ट की मांग के अनुसार सही जगह पर debug.keystore जेनरेट करना
-          mkdir -p ~/.android
-          keytool -genkey -v -keystore ~/.android/debug.keystore -storepass android -keypass android -alias androiddebugkey -dname "CN=Android Debug,O=Android,C=US" -keyalg RSA -keysize 2048 -validity 10000
-          
-          # इसे उन सभी संभावित जगहों पर कॉपी करें जहाँ प्रोजेक्ट इसे ढूंढ रहा है
-          mkdir -p app/debug
-          cp ~/.android/debug.keystore ./debug.keystore || true
-          cp ~/.android/debug.keystore ./app/debug.keystore || true
-          cp ~/.android/debug.keystore ./app/debug/keystore.gradle || true
-          
-          # 9.3.1 वर्ज़न के साथ KSP और साइनिंग एरर को बाईपास करके फाइनल बिल्ड रन करना
           ./gradlew assembleDebug --no-daemon -x kspDebugKotlin -x kspReleaseKotlin -x validateSigningDebug
           echo "=== Build Completed ==="
 
