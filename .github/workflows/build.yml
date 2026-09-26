@@ -40,8 +40,9 @@ jobs:
           PROJECT_ROOT=$(dirname "$SETTINGS_PATH")
           cd "$PROJECT_ROOT"
           
-          # Generate fresh gradle wrapper to match the new 76-day update
-          gradle wrapper --gradle-version 8.7
+          # Force generate the exact Gradle version required by the 76-day update
+          echo "Generating Gradle wrapper version 9.3.1..."
+          gradle wrapper --gradle-version 9.3.1
           chmod +x gradlew
           
           ./gradlew assembleDebug --no-daemon -x kspDebugKotlin -x kspReleaseKotlin -x validateSigningDebug
