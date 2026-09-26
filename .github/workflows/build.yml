@@ -19,33 +19,31 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Extract Project Files
+      - name: Unzip Project Files
         run: |
-          find . -name "*.zip" -exec unzip -q {} -d . \;
+          ZIP_FILE=$(find . -name "*.zip" | head -n 1)
+          if [ -z "$ZIP_FILE" ]; then
+            echo "Error: No zip file found!"
+            exit 1
+          fi
+          echo "Unzipping $ZIP_FILE..."
+          unzip -q "$ZIP_FILE" -d ./extracted_project
           echo "=== Unzip Completed ==="
 
-      - name: Fix Missing Files and Build
+      - name: Generate Wrapper and Build APK
         run: |
-          # Find where settings.gradle or settings.gradle.kts is located
-          SETTINGS_PATH=$(find . -name "settings.gradle.kts" -o -name "settings.gradle" | head -n 1)
+          SETTINGS_PATH=$(find ./extracted_project -name "settings.gradle.kts" -o -name "settings.gradle" | head -n 1)
           if [ -z "$SETTINGS_PATH" ]; then
-            echo "Error: settings.gradle file not found anywhere!"
+            echo "Error: settings.gradle not found!"
             exit 1
           fi
           PROJECT_ROOT=$(dirname "$SETTINGS_PATH")
-          echo "Project Root found at: $PROJECT_ROOT"
           cd "$PROJECT_ROOT"
           
-          # Find gradlew inside the project root specifically
-          GRADLEW_FILE=$(find . -name "gradlew" | head -n 1)
-          if [ -z "$GRADLEW_FILE" ]; then
-            echo "Error: gradlew file not found inside project root!"
-            exit 1
-          fi
-          
-          GRADLEW_DIR=$(dirname "$GRADLEW_FILE")
-          cd "$GRADLEW_DIR"
+          # Generate fresh gradle wrapper to match the new 76-day update
+          gradle wrapper --gradle-version 8.7
           chmod +x gradlew
+          
           ./gradlew assembleDebug --no-daemon -x kspDebugKotlin -x kspReleaseKotlin -x validateSigningDebug
           echo "=== Build Completed ==="
 
