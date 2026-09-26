@@ -30,7 +30,7 @@ jobs:
           unzip -q "$ZIP_FILE" -d ./extracted_project
           echo "=== Unzip Completed ==="
 
-      - name: Generate Wrapper and Build APK
+      - name: Generate Wrapper, Keystore and Build APK
         run: |
           SETTINGS_PATH=$(find ./extracted_project -name "settings.gradle.kts" -o -name "settings.gradle" | head -n 1)
           if [ -z "$SETTINGS_PATH" ]; then
@@ -40,11 +40,16 @@ jobs:
           PROJECT_ROOT=$(dirname "$SETTINGS_PATH")
           cd "$PROJECT_ROOT"
           
-          # Force generate the exact Gradle version required by the 76-day update
-          echo "Generating Gradle wrapper version 9.3.1..."
+          # 1. Generate fresh gradle wrapper version 9.3.1
+          echo "Generating Gradle wrapper..."
           gradle wrapper --gradle-version 9.3.1
           chmod +x gradlew
           
+          # 2. Force generate the missing debug.keystore file right here
+          echo "Generating missing debug.keystore..."
+          keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+          
+          # 3. Compile and build the APK package safely
           ./gradlew assembleDebug --no-daemon -x kspDebugKotlin -x kspReleaseKotlin -x validateSigningDebug
           echo "=== Build Completed ==="
 
