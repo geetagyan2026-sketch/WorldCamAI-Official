@@ -45,16 +45,18 @@ jobs:
           gradle wrapper --gradle-version 9.3.1
           chmod +x gradlew
 
-          # 2. Generate the release keystore file EXACTLY where the app code is looking for it
-          echo "Generating release keystore at the required location..."
+          # 2. Generate the release keystore file
+          echo "Generating release keystore..."
           keytool -genkey -v -keystore my-upload-key.jks -storepass worldcam123 -alias worldcam_alias -keypass worldcam123 -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=WorldCamAI, OU=AI Studio, O=WorldCam, L=Kota, S=Rajasthan, C=IN"
 
-          # 3. Inject global properties just in case to double-secure the signing config
-          mkdir -p ~/.gradle
-          echo "android.injected.signing.store.file=$PROJECT_ROOT/my-upload-key.jks" >> ~/.gradle/gradle.properties
-          echo "android.injected.signing.store.password=worldcam123" >> ~/.gradle/gradle.properties
-          echo "android.injected.signing.key.alias=worldcam_alias" >> ~/.gradle/gradle.properties
-          echo "android.injected.signing.key.password=worldcam123" >> ~/.gradle/gradle.properties
+          # 3. Create the exact daemon folder structure and copy the keystore there to satisfy the relative path
+          echo "Copying keystore to Gradle daemon directory to fix the relative path error..."
+          mkdir -p ~/.gradle/daemon/9.3.1/extracted_project
+          cp my-upload-key.jks ~/.gradle/daemon/9.3.1/extracted_project/my-upload-key.jks
+          
+          # Also copy to the workspace parent just in case
+          mkdir -p /home/runner/extracted_project
+          cp my-upload-key.jks /home/runner/extracted_project/my-upload-key.jks
 
           # 4. Compile and build the Release APK safely
           ./gradlew assembleRelease --no-daemon -x kspDebugKotlin -x kspReleaseKotlin -x validateSigningDebug
