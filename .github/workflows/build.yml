@@ -39,18 +39,18 @@ jobs:
           fi
           PROJECT_ROOT=$(dirname "$SETTINGS_PATH")
           cd "$PROJECT_ROOT"
-          
+
           # 1. Generate fresh gradle wrapper version 9.3.1
           echo "Generating Gradle wrapper..."
           gradle wrapper --gradle-version 9.3.1
           chmod +x gradlew
-          
-          # 2. Force generate the missing debug.keystore file right here
-          echo "Generating missing debug.keystore..."
-          keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
-          
-          # 3. Compile and build the APK package safely
-          ./gradlew assembleDebug --no-daemon -x kspDebugKotlin -x kspReleaseKotlin -x validateSigningDebug
+
+          # 2. Force generate the release keystore file right here (Fix for Amazon Store)
+          echo "Generating release keystore..."
+          keytool -genkey -v -keystore release.keystore -storepass worldcam123 -alias worldcam_alias -keypass worldcam123 -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=WorldCamAI, OU=AI Studio, O=WorldCam, L=Kota, S=Rajasthan, C=IN"
+
+          # 3. Compile and build the Release APK safely
+          ./gradlew assembleRelease --no-daemon -x kspDebugKotlin -x kspReleaseKotlin -x validateSigningDebug
           echo "=== Build Completed ==="
 
       - name: Upload APK Artifact
@@ -58,5 +58,5 @@ jobs:
         with:
           name: WorldCamAI-Official-APK
           path: |
-            **/build/outputs/apk/debug/*.apk
+            **/build/outputs/apk/release/*.apk
             **/*.apk
