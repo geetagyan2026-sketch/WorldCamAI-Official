@@ -49,23 +49,24 @@ jobs:
           echo "Generating release keystore..."
           keytool -genkey -v -keystore my-upload-key.jks -storepass worldcam123 -alias worldcam_alias -keypass worldcam123 -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=WorldCamAI, OU=AI Studio, O=WorldCam, L=Kota, S=Rajasthan, C=IN"
 
-          # 3. Handle relative path required by the internal configuration
+          # 3. Exact target folder configuration (Fixing line 179-180 error)
+          echo "Copying keystore directly inside the app folder where Gradle demands it..."
+          mkdir -p app
+          cp my-upload-key.jks app/my-upload-key.jks
+          
+          # Handling other daemon pathways just to be safe
           mkdir -p ~/.gradle/daemon/9.3.1/extracted_project
           cp my-upload-key.jks ~/.gradle/daemon/9.3.1/extracted_project/my-upload-key.jks
           mkdir -p /home/runner/extracted_project
           cp my-upload-key.jks /home/runner/extracted_project/my-upload-key.jks
 
-          # 4. Inject global Gradle properties to explicitly provide passwords to "release" config
-          echo "Injecting password credentials into gradle.properties..."
+          # 4. Inject global Gradle properties for release passwords
+          echo "Injecting password credentials..."
           mkdir -p ~/.gradle
           echo "worldcam.release.store.password=worldcam123" >> ~/.gradle/gradle.properties
           echo "worldcam.release.key.password=worldcam123" >> ~/.gradle/gradle.properties
-          
-          # Also supply standard Android environment variables for signing injection
-          export KEYSTORE_PASSWORD=worldcam123
-          export KEY_PASSWORD=worldcam123
 
-          # 5. Compile and build the Release APK with forced command-line project parameters
+          # 5. Compile and build the Release APK with project arguments
           ./gradlew assembleRelease --no-daemon \
             -Pandroid.injected.signing.store.file=my-upload-key.jks \
             -Pandroid.injected.signing.store.password=worldcam123 \
