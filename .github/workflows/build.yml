@@ -45,11 +45,23 @@ jobs:
           gradle wrapper --gradle-version 9.3.1
           chmod +x gradlew
 
-          # 2. Force generate the release keystore file right here (Fix for Amazon Store)
+          # 2. Generate the release keystore file at the exact root level
           echo "Generating release keystore..."
-          keytool -genkey -v -keystore release.keystore -storepass worldcam123 -alias worldcam_alias -keypass worldcam123 -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=WorldCamAI, OU=AI Studio, O=WorldCam, L=Kota, S=Rajasthan, C=IN"
+          keytool -genkey -v -keystore my-upload-key.jks -storepass worldcam123 -alias worldcam_alias -keypass worldcam123 -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=WorldCamAI, OU=AI Studio, O=WorldCam, L=Kota, S=Rajasthan, C=IN"
 
-          # 3. Compile and build the Release APK safely
+          # 3. Find app/build.gradle or app/build.gradle.kts and inject signing override properties
+          GRADLE_FILE=$(find . -name "build.gradle.kts" -o -name "build.gradle" | grep -v "extracted_project/build.gradle" | head -n 1)
+          if [ -n "$GRADLE_FILE" ]; then
+            echo "Found target gradle file: $GRADLE_FILE"
+            # Force replace signing configs via gradle properties injection to bypass missing file errors
+            mkdir -p ~/.gradle
+            echo "android.injected.signing.store.file=$PROJECT_ROOT/my-upload-key.jks" >> ~/.gradle/gradle.properties
+            echo "android.injected.signing.store.password=worldcam123" >> ~/.gradle/gradle.properties
+            echo "android.injected.signing.key.alias=worldcam_alias" >> ~/.gradle/gradle.properties
+            echo "android.injected.signing.key.password=worldcam123" >> ~/.gradle/gradle.properties
+          fi
+
+          # 4. Compile and build the Release APK safely
           ./gradlew assembleRelease --no-daemon -x kspDebugKotlin -x kspReleaseKotlin -x validateSigningDebug
           echo "=== Build Completed ==="
 
